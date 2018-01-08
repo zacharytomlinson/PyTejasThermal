@@ -18,16 +18,16 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
         self.GPIO_2 = 23
         self.RunningStyleSheet = "QPushButton {border-radius: 7px;background: #41CD52;height: 40px;}"
         self.StoppedStyleSheet = "QPushButton {border-radius: 7px;background: #ec7063;height: 40px;}"
-        self.horizontalSlider_2.valueChanged.connect(self.CuttoffTemperatureChanged)
+        self.horizontalSlider_2.valueChanged.connect(self.TemperatureChanged)
         self.pushButton.clicked.connect(self.RunDistillation)
         self.TempThread = TempThread(self)
         self.TempThread.temp1.connect(self.label_4.setText)
         self.TempThread.temp2.connect(self.label_6.setText)
-        self.TempThread.temp1.connect(self.CuttoffTemperatureChanged)
-        self.TempThread.temp2.connect(self.CuttoffTemperatureChanged)
+        self.TempThread.temp1.connect(self.TemperatureChanged)
+        self.TempThread.temp2.connect(self.TemperatureChanged)
         self.TempThread.start()
 
-    def CuttoffTemperatureChanged(self):
+    def TemperatureChanged(self):
         newTemp = CelciusToFahrenheit(self.horizontalSlider_2.value())
         thermo1 = int(self.label_4.text()[:-2])
         thermo2 = int(self.label_6.text()[:-2])
@@ -38,7 +38,7 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
         self.label_2.setText(str(newTemp) + "°F")
         if self.IsRunning:
             if thermo1 >= newTemp and thermo2 >= newTemp:
-                self.RunDistillation        
+                self.RunDistillation 
         
     def RunDistillation(self):
         if self.IsRunning:
