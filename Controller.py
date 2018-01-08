@@ -13,9 +13,10 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
-        self.IsRunning = False
-        self.GPIO_1 = 18
+				self.GPIO_1 = 18
         self.GPIO_2 = 23
+				self.SetupGPIO
+        self.IsRunning = False
         self.RunningStyleSheet = "QPushButton {border-radius: 7px;background: #41CD52;height: 40px;}"
         self.StoppedStyleSheet = "QPushButton {border-radius: 7px;background: #ec7063;height: 40px;}"
         self.horizontalSlider_2.valueChanged.connect(self.TemperatureChanged)
@@ -60,7 +61,8 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
     
     def SetupGPIO(self):
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(18,GPIO.OUT)
+        GPIO.setup(self.GPIO_1,GPIO.OUT)
+				GPIO.setup(self.GPIO_2,GPIO.OUT)
 
 class TempThread(QThread):
     temp1 = pyqtSignal(str)
