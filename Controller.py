@@ -63,16 +63,19 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
         GPIO.setup(18,GPIO.OUT)
 
 class TempThread(QThread):
+    temp1 = pyqtSignal(str)
+    temp2 = pyqtSignal(str)
     
     def __init__(self, parent=None):
         QThread.__init__(self, parent=parent)
         self.isRunning = True
-        self.SerialConn = serial.Serial('COM6', 115200)
+        self.SerialConn = serial.Serial('/dev/ttyACM0', 115200)
 
     def run(self):     
         while self.isRunning:
-            thermo1 = CelciusToFahrenheit(float((self.SerialConn.readline()).strip()))
-            thermo2 = CelciusToFahrenheit(float((self.SerialConn.readline()).strip()))
+            line = (((self.SerialConn.readline()).decode('ASCII')).strip()).split("|")
+            thermo1 = CelciusToFahrenheit(float(line[0]))
+            thermo2 = CelciusToFahrenheit(float(line[1]))
             self.temp1.emit(str(int(thermo1)) + "°F")
             self.temp2.emit(str(int(thermo2)) + "°F")
         

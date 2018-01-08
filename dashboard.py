@@ -742,10 +742,10 @@ class Ui_StillDashboard(object):
         _translate = QtCore.QCoreApplication.translate
         StillDashboard.setWindowTitle(_translate("StillDashboard", "Dashboard"))
         self.label.setText(_translate("StillDashboard", "Cutoff Temperature"))
-        self.label_2.setText(_translate("StillDashboard", "80°C"))
+        self.label_2.setText(_translate("StillDashboard", "0°f"))
         self.label_3.setText(_translate("StillDashboard", "Thermoresistor 1"))
-        self.label_4.setText(_translate("StillDashboard", "24°C"))
+        self.label_4.setText(_translate("StillDashboard", "0°f"))
         self.label_5.setText(_translate("StillDashboard", "Thermoresistor 2"))
-        self.label_6.setText(_translate("StillDashboard", "22°C"))
+        self.label_6.setText(_translate("StillDashboard", "0°f"))
         self.pushButton.setText(_translate("StillDashboard", "Start Run"))
 
