@@ -9,29 +9,37 @@ from time import sleep
 def CelciusToFahrenheit(celcius):
     return round(celcius * (9.0 / 5.0) + 32, 2)
 
-class TempThread(QThread):
+class TempThread(QObject):
     temp1 = pyqtSignal(str)
     temp2 = pyqtSignal(str)
     
     def __init__(self, parent=None):
-        QThread.__init__(self, parent=parent)
+        super().__init__()
+        self.isRunning = True
+        self.__abort = False
         self.SerialConn = serial.Serial('/dev/ttyACM0', 115200)
 
-    def run(self):     
-        try:
-            line = (((self.SerialConn.readline()).decode('ASCII')).strip()).split("|")
-            thermo1 = CelciusToFahrenheit(float(line[0]))
-            print(thermo1)
-            thermo2 = CelciusToFahrenheit(float(line[1]))
-            print(thermo2)
-            self.temp1.emit(str(int(thermo1)) + "°F")
-            self.temp2.emit(str(int(thermo2)) + "°F")
-        except:
-            print("Error")
+    def work(self):   
+        while self.isRunning:
+            try:
+                line = (((self.SerialConn.readline()).decode('ASCII')).strip()).split("|")
+                thermo1 = CelciusToFahrenheit(float(line[0]))
+                print(thermo1)
+                thermo2 = CelciusToFahrenheit(float(line[1]))
+                print(thermo2)
+                self.temp1.emit(str(int(thermo1)) + "°F")
+                self.temp2.emit(str(int(thermo2)) + "°F")
+            except:
+                print("Error")
+            
+            app.processEvents()
+            if self.__abort:
+                break
+                
+            sleep(1)
         
-    def stop(self):
-        self.quit()
-        self.wait()
+    def abort(self):
+        self.__abort = True
 
 class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
     def __init__(self, parent=None):
@@ -45,17 +53,12 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
         self.StoppedStyleSheet = "QPushButton {border-radius: 7px;background: #ec7063;height: 40px;}"
         self.horizontalSlider_2.valueChanged.connect(self.TemperatureChanged)
         self.pushButton.clicked.connect(self.RunDistillation)
-        self.RunTempThread
-        
-    def RunTempThread(self):
-        while True:
-            thread = TempThread(self)
-            thread.temp1.connect(self.label_4.setText)
-            thread.temp2.connect(self.label_6.setText)
-            thread.temp1.connect(self.TemperatureChanged)
-            thread.temp2.connect(self.TemperatureChanged)
-            thread.start()
-            sleep(1)
+        self.TempThread = TempThread(self)
+        self.TempThread.temp1.connect(self.label_4.setText)
+        self.TempThread.temp2.connect(self.label_6.setText)
+        self.TempThread.temp1.connect(self.TemperatureChanged)
+        self.TempThread.temp2.connect(self.TemperatureChanged)
+        self.TempThread.start()
 
     def TemperatureChanged(self):
         newTemp = CelciusToFahrenheit(self.horizontalSlider_2.value())
