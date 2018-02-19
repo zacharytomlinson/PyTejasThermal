@@ -9,7 +9,7 @@ from time import sleep
 def CelciusToFahrenheit(celcius):
     return round(celcius * (9.0 / 5.0) + 32, 2)
 
-class TempThread(QObject):
+class TempWorker(QObject):
     temp1 = pyqtSignal(str)
     temp2 = pyqtSignal(str)
     
@@ -53,7 +53,10 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
         self.StoppedStyleSheet = "QPushButton {border-radius: 7px;background: #ec7063;height: 40px;}"
         self.horizontalSlider_2.valueChanged.connect(self.TemperatureChanged)
         self.pushButton.clicked.connect(self.RunDistillation)
-        self.TempThread = TempThread(self)
+        self.TempWorker = TempWorker()
+        self.TempThread = QThread()
+        self.TempThread.setObjectName('tempthread')
+        self.TempWorker.moveToThread(self.TempThread)
         self.TempThread.temp1.connect(self.label_4.setText)
         self.TempThread.temp2.connect(self.label_6.setText)
         self.TempThread.temp1.connect(self.TemperatureChanged)
