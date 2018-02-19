@@ -15,11 +15,9 @@ class TempThread(QThread):
     
     def __init__(self, parent=None):
         QThread.__init__(self, parent=parent)
-        #self.isRunning = True
         self.SerialConn = serial.Serial('/dev/ttyACM0', 115200)
 
     def run(self):     
-        #while self.isRunning:
         try:
             line = (((self.SerialConn.readline()).decode('ASCII')).strip()).split("|")
             thermo1 = CelciusToFahrenheit(float(line[0]))
@@ -32,7 +30,6 @@ class TempThread(QThread):
             print("Error")
         
     def stop(self):
-        #self.isRunning = False
         self.quit()
         self.wait()
 
@@ -48,16 +45,15 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
         self.StoppedStyleSheet = "QPushButton {border-radius: 7px;background: #ec7063;height: 40px;}"
         self.horizontalSlider_2.valueChanged.connect(self.TemperatureChanged)
         self.pushButton.clicked.connect(self.RunDistillation)
-        self.TempThread = TempThread(self)
-        self.TempThread.temp1.connect(self.label_4.setText)
-        self.TempThread.temp2.connect(self.label_6.setText)
-        self.TempThread.temp1.connect(self.TemperatureChanged)
-        self.TempThread.temp2.connect(self.TemperatureChanged)
-        self.RunTempThread
         
     def RunTempThread(self):
         while True:
-            self.TempThread.start()
+            thread = TempThread(self)
+            thread.temp1.connect(self.label_4.setText)
+            thread.temp2.connect(self.label_6.setText)
+            thread.temp1.connect(self.TemperatureChanged)
+            thread.temp2.connect(self.TemperatureChanged)
+            thread.start()
             sleep(1)
 
     def TemperatureChanged(self):
