@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 from time import sleep
 
 def CelciusToFahrenheit(celcius):
-    return celcius * (9.0 / 5.0) + 32
+    return round(celcius * (9.0 / 5.0) + 32, 2)
 
 class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
     def __init__(self):
