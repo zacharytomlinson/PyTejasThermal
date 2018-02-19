@@ -91,7 +91,9 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
         GPIO.setup(self.GPIO_2,GPIO.OUT)
  
 def main():
-    app = QApplication(sys.argv)
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])
     form = MainWindow()
     form.setWindowFlags(PyQt5.QtCore.Qt.FramelessWindowHint)
     form.setWindowIcon(PyQt5.QtGui.QIcon("icon.ico"))
