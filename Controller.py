@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import serial, sys, dashboard, PyQt5, #RPi.GPIO as GPIO 
+import serial, sys, dashboard, PyQt5, RPi.GPIO as GPIO 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
 from PyQt5.QtGui import QPixmap, QImage
@@ -15,7 +15,7 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
         self.setupUi(self)
         self.GPIO_1 = 18
         self.GPIO_2 = 23
-        #self.SetupGPIO
+        self.SetupGPIO
         self.IsRunning = False
         self.RunningStyleSheet = "QPushButton {border-radius: 7px;background: #41CD52;height: 40px;}"
         self.StoppedStyleSheet = "QPushButton {border-radius: 7px;background: #ec7063;height: 40px;}"
@@ -46,23 +46,23 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
             self.pushButton.setStyleSheet(self.RunningStyleSheet)
             self.pushButton.setText("Start Run")
             self.IsRunning = False
-            #GPIO.output(self.GPIO_1,GPIO.LOW)
-            #GPIO.output(self.GPIO_2,GPIO.LOW)
+            GPIO.output(self.GPIO_1,GPIO.LOW)
+            GPIO.output(self.GPIO_2,GPIO.LOW)
         else:
             self.pushButton.setStyleSheet(self.StoppedStyleSheet)
             self.pushButton.setText("Stop Run")
             self.IsRunning = True
-            #GPIO.output(self.GPIO_1,GPIO.HIGH)
-            #GPIO.output(self.GPIO_2,GPIO.HIGH)
+            GPIO.output(self.GPIO_1,GPIO.HIGH)
+            GPIO.output(self.GPIO_2,GPIO.HIGH)
             
     def closeEvent(self, event):
         self.TempThread.stop()
         QWidget.closeEvent(self, event)
     
     def SetupGPIO(self):
-        #GPIO.setmode(GPIO.BCM)
-        #GPIO.setup(self.GPIO_1,GPIO.OUT)
-        #GPIO.setup(self.GPIO_2,GPIO.OUT)
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.GPIO_1,GPIO.OUT)
+        GPIO.setup(self.GPIO_2,GPIO.OUT)
 
 class TempThread(QThread):
     temp1 = pyqtSignal(str)
