@@ -15,25 +15,24 @@ class TempThread(QThread):
     
     def __init__(self, parent=None):
         QThread.__init__(self, parent=parent)
-        self.isRunning = True
+        #self.isRunning = True
         self.SerialConn = serial.Serial('/dev/ttyACM0', 115200)
 
     def run(self):     
-        while self.isRunning:
-            try:
-                line = (((self.SerialConn.readline()).decode('ASCII')).strip()).split("|")
-                thermo1 = CelciusToFahrenheit(float(line[0]))
-                print(thermo1)
-                thermo2 = CelciusToFahrenheit(float(line[1]))
-                print(thermo2)
-                self.temp1.emit(str(int(thermo1)) + "°F")
-                self.temp2.emit(str(int(thermo2)) + "°F")
-            except:
-                print("Error")
-            sleep(1)
+        #while self.isRunning:
+        try:
+            line = (((self.SerialConn.readline()).decode('ASCII')).strip()).split("|")
+            thermo1 = CelciusToFahrenheit(float(line[0]))
+            print(thermo1)
+            thermo2 = CelciusToFahrenheit(float(line[1]))
+            print(thermo2)
+            self.temp1.emit(str(int(thermo1)) + "°F")
+            self.temp2.emit(str(int(thermo2)) + "°F")
+        except:
+            print("Error")
         
     def stop(self):
-        self.isRunning = False
+        #self.isRunning = False
         self.quit()
         self.wait()
 
@@ -54,7 +53,12 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
         self.TempThread.temp2.connect(self.label_6.setText)
         self.TempThread.temp1.connect(self.TemperatureChanged)
         self.TempThread.temp2.connect(self.TemperatureChanged)
-        self.TempThread.start()
+        self.RunTempThread
+        
+    def RunTempThread(self):
+        while True:
+            self.TempThread.start()
+            sleep(1)
 
     def TemperatureChanged(self):
         newTemp = CelciusToFahrenheit(self.horizontalSlider_2.value())
