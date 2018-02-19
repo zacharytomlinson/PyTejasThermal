@@ -9,9 +9,34 @@ from time import sleep
 def CelciusToFahrenheit(celcius):
     return round(celcius * (9.0 / 5.0) + 32, 2)
 
+
+class TempThread(QThread):
+    temp1 = pyqtSignal(str)
+    temp2 = pyqtSignal(str)
+    
+    def __init__(self, parent=None):
+        QThread.__init__(self, parent=parent)
+        self.isRunning = True
+        self.SerialConn = serial.Serial('/dev/ttyACM0', 115200)
+
+    def run(self):     
+        while True:
+            line = (((self.SerialConn.readline()).decode('ASCII')).strip()).split("|")
+            thermo1 = CelciusToFahrenheit(float(line[0]))
+            print(thermo1)
+            thermo2 = CelciusToFahrenheit(float(line[1]))
+            print(thermo2)
+            self.temp1.emit(str(int(thermo1)) + "°F")
+            self.temp2.emit(str(int(thermo2)) + "°F")
+        
+    def stop(self):
+        self.isRunning = False
+        self.quit()
+        self.wait()
+
 class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
-    def __init__(self):
-        super(self.__class__, self).__init__()
+    def __init__(self, parent=None):
+        super(self.__class__, self).__init__(parent)
         self.setupUi(self)
         self.GPIO_1 = 18
         self.GPIO_2 = 23
@@ -27,6 +52,7 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
         self.TempThread.temp1.connect(self.TemperatureChanged)
         self.TempThread.temp2.connect(self.TemperatureChanged)
         self.TempThread.start()
+        self.show()
 
     def TemperatureChanged(self):
         newTemp = CelciusToFahrenheit(self.horizontalSlider_2.value())
@@ -63,28 +89,6 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.GPIO_1,GPIO.OUT)
         GPIO.setup(self.GPIO_2,GPIO.OUT)
-
-class TempThread(QThread):
-    temp1 = pyqtSignal(str)
-    temp2 = pyqtSignal(str)
-    
-    def __init__(self, parent=None):
-        QThread.__init__(self, parent=parent)
-        self.isRunning = True
-        self.SerialConn = serial.Serial('/dev/ttyACM0', 115200)
-
-    def run(self):     
-        while self.isRunning:
-            line = (((self.SerialConn.readline()).decode('ASCII')).strip()).split("|")
-            thermo1 = CelciusToFahrenheit(float(line[0]))
-            thermo2 = CelciusToFahrenheit(float(line[1]))
-            self.temp1.emit(str(int(thermo1)) + "°F")
-            self.temp2.emit(str(int(thermo2)) + "°F")
-        
-    def stop(self):
-        self.isRunning = False
-        self.quit()
-        self.wait()
  
 def main():
     app = QApplication(sys.argv)
