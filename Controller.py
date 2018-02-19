@@ -45,6 +45,7 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
         self.StoppedStyleSheet = "QPushButton {border-radius: 7px;background: #ec7063;height: 40px;}"
         self.horizontalSlider_2.valueChanged.connect(self.TemperatureChanged)
         self.pushButton.clicked.connect(self.RunDistillation)
+        self.RunTempThread
         
     def RunTempThread(self):
         while True:
