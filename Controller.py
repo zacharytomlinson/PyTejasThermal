@@ -17,7 +17,7 @@ class TempWorker(QRunnable):
     def __init__(self, parent=None):
         super().__init__()
         self.__abort = False
-        self.SerialConn = serial.Serial('COM6', 115200)
+        self.SerialConn = serial.Serial('/dev/ttyACM0', 115200)
         self.Signals = WorkerSignals()
 
     def run(self):  
