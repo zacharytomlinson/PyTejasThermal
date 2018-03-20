@@ -1,41 +1,39 @@
 # -*- coding: utf-8 -*-
-import serial, sys, dashboard, PyQt5, RPi.GPIO as GPIO 
+import serial, sys, dashboard, PyQt5, RPi.GPIO as GPIO
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
-from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel
 from time import sleep
 
 def CelciusToFahrenheit(celcius):
     return round(celcius * (9.0 / 5.0) + 32, 2)
 
-class TempWorker(QObject):
+class WorkerSignals(QObject):
     temp1 = pyqtSignal(str)
     temp2 = pyqtSignal(str)
     
+class TempWorker(QRunnable): 
     def __init__(self, parent=None):
         super().__init__()
-        self.isRunning = True
         self.__abort = False
-        self.SerialConn = serial.Serial('/dev/ttyACM0', 115200)
+        self.SerialConn = serial.Serial('COM6', 115200)
+        self.Signals = WorkerSignals()
 
-    def work(self):   
-        while self.isRunning:
+    def run(self):  
+        while True:
             try:
                 line = (((self.SerialConn.readline()).decode('ASCII')).strip()).split("|")
                 thermo1 = CelciusToFahrenheit(float(line[0]))
-                print(thermo1)
                 thermo2 = CelciusToFahrenheit(float(line[1]))
-                print(thermo2)
-                self.temp1.emit(str(int(thermo1)) + "°F")
-                self.temp2.emit(str(int(thermo2)) + "°F")
+                self.Signals.temp1.emit(str(int(thermo1)) + "°F")
+                self.Signals.temp2.emit(str(int(thermo2)) + "°F")
             except:
                 print("Error")
             
-            app.processEvents()
             if self.__abort:
                 break
-                
+            
             sleep(1)
         
     def abort(self):
@@ -53,15 +51,13 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
         self.StoppedStyleSheet = "QPushButton {border-radius: 7px;background: #ec7063;height: 40px;}"
         self.horizontalSlider_2.valueChanged.connect(self.TemperatureChanged)
         self.pushButton.clicked.connect(self.RunDistillation)
-        self.TempWorker = TempWorker()
-        self.TempThread = QThread()
-        self.TempThread.setObjectName('tempthread')
-        self.TempWorker.moveToThread(self.TempThread)
-        self.TempThread.temp1.connect(self.label_4.setText)
-        self.TempThread.temp2.connect(self.label_6.setText)
-        self.TempThread.temp1.connect(self.TemperatureChanged)
-        self.TempThread.temp2.connect(self.TemperatureChanged)
-        self.TempThread.start()
+        self.ThreadPool = QThreadPool()
+        self.TempThread = TempWorker()
+        self.TempThread.Signals.temp1.connect(self.label_4.setText)
+        self.TempThread.Signals.temp2.connect(self.label_6.setText)
+        self.TempThread.Signals.temp1.connect(self.TemperatureChanged)
+        self.TempThread.Signals.temp2.connect(self.TemperatureChanged)
+        self.ThreadPool.start(self.TempThread)
 
     def TemperatureChanged(self):
         newTemp = CelciusToFahrenheit(self.horizontalSlider_2.value())
@@ -74,7 +70,8 @@ class MainWindow(QMainWindow, dashboard.Ui_StillDashboard):
         self.label_2.setText(str(newTemp) + "°F")
         if self.IsRunning:
             if thermo1 >= newTemp and thermo2 >= newTemp:
-                self.RunDistillation 
+                self.RunDistillation
+        QApplication.processEvents()
         
     def RunDistillation(self):
         if self.IsRunning:
